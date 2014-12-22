@@ -336,6 +336,25 @@ class Dropbox.Client
   getUserInfo: (options, callback) ->
     @getAccountInfo options, callback
 
+  # Retrieves information about a user's shared folders.
+  #
+  # @param {String} id (optional) the ID of a specific shared folder.
+  # @param {function(Dropbox.ApiError, Object)} callback called with the result
+  #   of the /shared_folders HTTP request; if the call succeeds, the second
+  #   parameter is the parsed JSON data from the response and the first
+  #   parameter is null
+  # @return {XMLHttpRequest} the XHR object used for this API call
+  getSharedFolders: (id, callback) ->
+    if (not callback) and (typeof id is 'function')
+      callback = id
+      id = ''
+
+    xhr = new Dropbox.Util.Xhr 'GET',
+                              "#{@_urls.sharedFolders}/#{@_urlEncodePath(id)}"
+    xhr.signWithOauth @_oauth
+    @_dispatchXhr xhr, (error, sharedFolders) ->
+      callback error, sharedFolders
+
   # Retrieves the contents of a file stored in Dropbox.
   #
   # Some options are silently ignored in Internet Explorer 9 and below, due to
@@ -1427,6 +1446,7 @@ class Dropbox.Client
       accountInfo: "#{@_apiServer}/1/account/info"
 
       # Files and metadata.
+      sharedFolders: "#{@_apiServer}/1/shared_folders"
       getFile: "#{@_fileServer}/1/files/auto"
       postFile: "#{@_fileServer}/1/files/auto"
       putFile: "#{@_fileServer}/1/files_put/auto"
